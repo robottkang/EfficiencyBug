@@ -91,10 +91,10 @@ public class GameManagerEditor : Editor
 
                     if (y >= 0 && x >= 0)
                     {
-                        if (spaceCount < gameManager.field.fieldObject.transform.childCount) // row Çà
+                        if (spaceCount < gameManager.field.fieldObject.transform.childCount) // row í–‰
                         {
-                            gameManager.field.field[x, y] = gameManager.field.fieldObject.transform.GetChild(spaceCount).gameObject;
-                            GameFieldSpace space = gameManager.field.field[x, y].GetComponent<GameFieldSpace>();
+                            gameManager.field.borad[x, y] = gameManager.field.fieldObject.transform.GetChild(spaceCount).gameObject;
+                            GameFieldSpace space = gameManager.field.borad[x, y].GetComponent<GameFieldSpace>();
                             EditorGUILayout.BeginVertical(columnStyle);
                             space.value = EditorGUILayout.IntField(space.value, intStyle, GUILayout.Width(intStyle.fixedWidth));
                             EditorGUILayout.EndVertical();
@@ -112,6 +112,12 @@ public class GameManagerEditor : Editor
             }
             EditorGUILayout.EndVertical();
 
+        }
+
+        if (GUILayout.Button("Skip Stage"))
+        {
+            gameManager.stageNum++;
+            gameManager.RearrangeBorad(gameManager.stageNum / 4 + 3);
         }
     }
 }
