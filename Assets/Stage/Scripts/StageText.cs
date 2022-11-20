@@ -10,12 +10,23 @@ public class StageText : MonoBehaviour
     private TextMesh stage;
     [SerializeField]
     private GameManager gameManager;
+    [SerializeField]
+    private string title;
+    
+    private GameSetting.GameState rightBeforeGameState = GameSetting.GameState.NotPlay;
+    private GameSetting.GameState beforeGameState = GameSetting.GameState.NotPlay;
 
     private void Update()
     {
-        if (GameSetting.currentGameState == GameSetting.GameState.NotPlay)
+        if (rightBeforeGameState != GameSetting.currentGameState)
         {
-            stage.text = "효율충";
+            beforeGameState = rightBeforeGameState;
+            rightBeforeGameState = GameSetting.currentGameState;
+        }
+
+        if (GameSetting.currentGameState == GameSetting.GameState.NotPlay || (GameSetting.currentGameState == GameSetting.GameState.Pause && beforeGameState == GameSetting.GameState.NotPlay))
+        {
+            stage.text = title;
         }
         else
         {
