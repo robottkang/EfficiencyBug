@@ -4,9 +4,16 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    public int inputChildCount = -1;
+    [SerializeField]
+    private GameObject setting;
     private int _stageNum = 0;
     public float timeLimit;
+    [SerializeField]
+    private float _penaltyiTime;
+    [SerializeField]
+    private TutorialManager tutorialManager;
+    [SerializeField]
+    private GameObject quitMenu;
     [HideInInspector]
     public FieldBorad field;
     private Vector2Int _selectionBoxPositionInBorad = new Vector2Int(2,2);
@@ -19,18 +26,28 @@ public class GameManager : MonoBehaviour
         get => _stageNum;
         set
         {
-            if (value < 0)
-            {
-                _stageNum = 0;
-                return;
-            }
-
             if (_stageNum != value)
             {
                 GameSetting.currentGameState = GameSetting.GameState.Play;
+            }
+
+            if (value < 0)
+            {
+                _stageNum = 0;
+            }
+            else
+            {
                 _stageNum = value;
             }
         }
+    }
+
+    /// <summary>
+    /// groggyTime is the duration that you can't select field when your selection is wrong.
+    /// </summary>
+    public float penaltyTime
+    {
+        get => _penaltyiTime;
     }
 
     /// <summary>
@@ -42,88 +59,76 @@ public class GameManager : MonoBehaviour
         set => _selectionBoxPositionInBorad = new Vector2Int(Mathf.Clamp(value.x, 1, FieldBorad.rows - 2), Mathf.Clamp(value.y, 1, FieldBorad.columns - 2));
     }
 
+
     private void Awake()
     {
-        InitializeBorad();
+        Initialize();
+
+        if (PlayerPrefs.HasKey("HighestScore"))
+        {
+            //if (SecureHelper.HashRobottkangSalt((temp = PlayerPrefs.GetInt("HighestScore")).ToString()) == PlayerPrefs.GetString("CheckHighestScoreManipulation"))
+            //{
+            //    highestScore = temp;
+            //}
+            //else
+            //{
+            //    Debug.Log("어케 했누");
+            //}
+            TryChangeHighestScore();
+        }
+        else
+        {
+            SetHighestScore();
+        }
     }
 
     private void Update()
     {
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            quitMenu.SetActive(true);
+        }
+
         switch (GameSetting.currentGameState)
         {
             case GameSetting.GameState.NotPlay:
-                CompareValueWithMaxValue();
                 break;
             case GameSetting.GameState.Play:
-                CompareValueWithMaxValue();
                 break;
             case GameSetting.GameState.Pause:
                 break;
-            case GameSetting.GameState.Failure:
+            case GameSetting.GameState.Over:
+                HandleOver();
                 break;
         }
     }
 
-
-    private void CompareValueWithMaxValue()
+    private void HandleOver()
     {
-        if (inputChildCount != -1)
+        TryChangeHighestScore();
+
+        //if (PlayerPrefs.GetString("CheckHighestScoreManipulation") == SecureHelper.HashRobottkangSalt(highestScore.ToString()))
+        //{
+        //    TryChangeHighestScore();
+        //}
+        //else
+        //{
+        //    Debug.Log("마 이 쉐리 뭐네");
+        //}
+    }
+
+    public void TryChangeHighestScore()
+    {
+        if (stageNum > PlayerPrefs.GetInt("HighestScore", 0))
         {
-            if (SelectBox(selectionBoxPositionInBorad.x, selectionBoxPositionInBorad.y) == FindMaxValue())
-            {
-                stageNum++;
-                RearrangeBorad(stageNum / 4 + 3);
-            }
-            inputChildCount = -1;
+            PlayerPrefs.SetInt("HighestScore", stageNum);
         }
     }
 
-    public int FindMaxValue()
+    private void SetHighestScore()
     {
-        int maxValue = 0;
-        int valueSum = 0;
-
-        for (int boradGlobalX = 1; boradGlobalX < 4; boradGlobalX++)     // x of 3*3 range center value
-        {
-            for (int boradGlobalY = 1; boradGlobalY < 4; boradGlobalY++) // y of 3*3 range center value
-            {
-                for (int boradLocalX = boradGlobalX - 1; boradLocalX <= boradGlobalX + 1; boradLocalX++)     // int range [boradGlobalX - 1, boradGlobalX + 1]
-                {
-                    for (int boradLocalY = boradGlobalY - 1; boradLocalY <= boradGlobalY + 1; boradLocalY++) // int range [boradGlobalY - 1, boradGlobalY + 1]
-                    {
-                        valueSum += field.borad[boradLocalX, boradLocalY].GetComponent<GameFieldSpace>().value;
-                    }
-                }
-
-                if (maxValue < valueSum)
-                {
-                    maxValue = valueSum;
-                }
-
-                valueSum = 0;
-            }
-        }
-        return maxValue;
-    }
-
-    /// <summary>
-    /// return sum value of range 3*3.
-    /// </summary>
-    /// <param name="x">x of Box's center</param>
-    /// <param name="y">y of Box's center</param>
-    public int SelectBox(int x, int y)
-    {
-        int valueSum = 0;
-        for (int i = x - 1; i <= x + 1; i++)
-        {
-            for (int j = y - 1; j <= y + 1; j++)
-            {
-                valueSum += field.borad[i, j].GetComponent<GameFieldSpace>().value;
-            }
-        }
-
-        Debug.Log(valueSum);
-        return valueSum;
+        PlayerPrefs.SetInt("HighestScore", stageNum);
+        //PlayerPrefs.SetString("CheckHighestScoreManipulation", SecureHelper.HashRobottkangSalt(stageNum.ToString()));
     }
 
     /// <summary>
@@ -141,11 +146,32 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public void Restart()
+    {
+        TryChangeHighestScore();
+        stageNum = 0;
+        GameSetting.currentGameState = GameSetting.GameState.NotPlay;
+        RearrangeBorad(2);
+    }
+
+    private void Initialize()
+    {
+        InitializeBorad();
+        
+        // 제일 골치거리 그게 누구??????? "튜토리얼"
+        //if (!GameSetting.whetherDidTutorial)
+        //{
+        //    Instantiate(tutorialManager.gameObject);
+        //}
+    }
+
     /// <summary>
     /// initialize borad and rearrange borad value
     /// </summary>
     public void InitializeBorad()
     {
+        setting.SetActive(false);
+
         int spaceCount = 0;
         for (int y = 0; y < FieldBorad.rows; y++)
         {
@@ -159,6 +185,10 @@ public class GameManager : MonoBehaviour
         RearrangeBorad(2);
     }
 
+    public void QuitGame()
+    {
+        Application.Quit();
+    }
 }
 
 [System.Serializable]
@@ -178,15 +208,7 @@ public static partial class GameSetting
     {
         get
         {
-            if (PlayerPrefs.HasKey("Tutorial"))
-            {
-                return PlayerPrefs.GetInt("Tutorial") > 0;
-            }
-            else
-            {
-                PlayerPrefs.SetInt("Tutorial", 0);
-                return false;
-            }
+            return PlayerPrefs.GetInt("Tutorial", 0) > 0;
         }
     }
 
@@ -195,6 +217,6 @@ public static partial class GameSetting
         NotPlay,
         Play,
         Pause,
-        Failure,
+        Over,
     }
 }
