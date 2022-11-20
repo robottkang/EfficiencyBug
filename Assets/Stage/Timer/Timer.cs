@@ -20,13 +20,14 @@ public class Timer : MonoBehaviour
     public float leftTime
     {
         get => _leftTime;
-        private set
+        set
         {
             _leftTime = Mathf.Clamp(value, 0, gameManager.timeLimit);
             
             if (_leftTime == 0f)
             {
-                GameSetting.currentGameState = GameSetting.GameState.Failure;
+                timerSlider.value = 0f;
+                GameSetting.currentGameState = GameSetting.GameState.Over;
                 Debug.Log("X(");
             }
         }
@@ -69,5 +70,10 @@ public class Timer : MonoBehaviour
             default:
                 break;
         }
+    }
+
+    public void ResetTimer()
+    {
+        leftTime = gameManager.timeLimit;
     }
 }
