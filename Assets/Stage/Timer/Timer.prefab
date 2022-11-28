@@ -327,6 +327,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gameManager: {fileID: 0}
   timerSlider: {fileID: 3106245885563635040}
+  timeLimit: 10
+  _penaltyTime: 0.6
   bonusTime: 3
 --- !u!1 &3106245885678178186
 GameObject:
