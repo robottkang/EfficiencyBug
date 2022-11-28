@@ -27,7 +27,7 @@ public class TempButton : MonoBehaviour
     {
         if (beforeGameState != GameSetting.currentGameState && GameSetting.currentGameState != GameSetting.GameState.Pause)
         {
-            if (GameSetting.currentGameState == GameSetting.GameState.Play)
+            if (GameSetting.currentGameState == GameSetting.GameState.Over)
             {
                 animator.SetTrigger("Disappear");
             }
