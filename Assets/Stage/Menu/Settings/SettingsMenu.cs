@@ -3,15 +3,24 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Audio;
+using UnityEngine.SceneManagement;
 
 public class SettingsMenu : MonoBehaviour
 {
+    [SerializeField]
+    private TutorialManager tutorialManager;
     [SerializeField]
     private GameManager gameManager;
     private GameSetting.GameState beforeGameState;
     [Header("-Audio")]
     [SerializeField]
     private AudioMixer audioMixer;
+    [SerializeField]
+    private Sprite volumeOnIcon;
+    [SerializeField]
+    private Sprite volumeOffIcon;
+    [SerializeField]
+    private Image SE_LabelIcon;
     [SerializeField]
     private Slider SE_slider;
     [SerializeField]
@@ -21,28 +30,10 @@ public class SettingsMenu : MonoBehaviour
     {
         float temp;
         audioMixer.SetFloat("SE", Mathf.Log10(temp = PlayerPrefs.GetFloat("SE", 0.1f)) * 20);
+        SetVolumeIcon(temp, SE_LabelIcon);
         SE_slider.value = temp;
         audioMixer.SetFloat("BGM", Mathf.Log10(temp = PlayerPrefs.GetFloat("BGM", 0.1f)) * 20);
         BGM_slider.value = temp;
-    }
-
-    private void Update()
-    {
-        if (Input.touchCount > 0)
-        {
-            Touch touch = Input.GetTouch(0);
-            RectTransform UI = transform.root.GetComponent<RectTransform>();
-            RectTransform rectTransform = transform.GetComponent<RectTransform>();
-
-            if (touch.position.x > (transform.position.x + rectTransform.sizeDelta.x / UI.sizeDelta.x * Screen.currentResolution.width / 2) ||
-                touch.position.x < (transform.position.x - rectTransform.sizeDelta.x / UI.sizeDelta.x * Screen.currentResolution.width / 2) ||
-                touch.position.y > (transform.position.y + rectTransform.sizeDelta.y / UI.sizeDelta.x * Screen.currentResolution.height / 2) ||
-                touch.position.y < (transform.position.y - rectTransform.sizeDelta.y / UI.sizeDelta.x * Screen.currentResolution.height / 2))
-            {
-                gameObject.SetActive(false);
-            }
-
-        }
     }
 
     public void SEControl(float volume)
@@ -50,6 +41,7 @@ public class SettingsMenu : MonoBehaviour
         PlayerPrefs.SetFloat("SE", volume);
         volume = Mathf.Log10(volume) * 20;
         audioMixer.SetFloat("SE", volume);
+        SetVolumeIcon(volume, SE_LabelIcon);
     }
 
     public void BGMControl(float volume)
@@ -57,6 +49,7 @@ public class SettingsMenu : MonoBehaviour
         PlayerPrefs.SetFloat("BGM", volume);
         volume = Mathf.Log10(volume) * 20;
         audioMixer.SetFloat("BGM", volume);
+        //SetVolumeIcon(volume, BGM_LabelIcon);
     }
 
     public void SetQuality(int qualityIndex)
@@ -77,6 +70,29 @@ public class SettingsMenu : MonoBehaviour
                 break;
         }
         QualitySettings.SetQualityLevel(qualityIndex);
+    }
+
+    public void SetVolumeIcon(float volume, Image label)
+    {
+        if (volume < -78)
+        {
+            label.sprite = volumeOffIcon;
+        }
+        else
+        {
+            label.sprite = volumeOnIcon;
+        }
+    }
+
+    public void ResatrtTuto()
+    {
+        if (GameObject.Find("TutorialManager(Clone)") == null)
+        {
+            gameManager.TryChangeHighestScore();
+            PlayerPrefs.SetInt("Tutorial", 0);
+            PlayerPrefs.Save();
+            SceneManager.LoadScene(0);
+        }
     }
 
     private void OnEnable()
