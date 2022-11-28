@@ -117,7 +117,7 @@ public class SelectionBox : MonoBehaviour
         else // not max
         {
             PlayAudioClip(wrongChoice);
-            timer.leftTime -= gameManager.penaltyTime;
+            timer.leftTime -= timer.penaltyTime;
         }
     }
 
