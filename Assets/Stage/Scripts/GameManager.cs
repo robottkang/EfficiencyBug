@@ -7,9 +7,6 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     private GameObject setting;
     private int _stageNum = 0;
-    public float timeLimit;
-    [SerializeField]
-    private float _penaltyiTime;
     [SerializeField]
     private TutorialManager tutorialManager;
     [SerializeField]
@@ -40,14 +37,6 @@ public class GameManager : MonoBehaviour
                 _stageNum = value;
             }
         }
-    }
-
-    /// <summary>
-    /// groggyTime is the duration that you can't select field when your selection is wrong.
-    /// </summary>
-    public float penaltyTime
-    {
-        get => _penaltyiTime;
     }
 
     /// <summary>
@@ -158,11 +147,10 @@ public class GameManager : MonoBehaviour
     {
         InitializeBorad();
         
-        // 제일 골치거리 그게 누구??????? "튜토리얼"
-        //if (!GameSetting.whetherDidTutorial)
-        //{
-        //    Instantiate(tutorialManager.gameObject);
-        //}
+        if (!GameSetting.whetherDidTutorial)
+        {
+            Instantiate(tutorialManager.gameObject).GetComponent<TutorialManager>().gameManager = this;
+        }
     }
 
     /// <summary>
