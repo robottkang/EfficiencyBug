@@ -10,9 +10,22 @@ public class Timer : MonoBehaviour
     [SerializeField]
     private Slider timerSlider;
     [SerializeField]
+    private float timeLimit;
+    [SerializeField]
+    private float _penaltyTime;
+    [SerializeField]
     private float bonusTime;
+    public bool stopTimer = false;
     private int stageNumBeforeChangeing;
     private float _leftTime;
+
+    /// <summary>
+    /// The time that shorten timeLimit when you select wrong
+    /// </summary>
+    public float penaltyTime
+    {
+        get => _penaltyTime;
+    }
 
     /// <summary>
     /// leftTime show the time left from 0 and set currentGameState to Filure State when it become 0.
@@ -20,17 +33,24 @@ public class Timer : MonoBehaviour
     public float leftTime
     {
         get => _leftTime;
-        private set
+        set
         {
-            _leftTime = Mathf.Clamp(value, 0, gameManager.timeLimit);
+            if (stopTimer)
+            {
+                return;
+            }
+
+            _leftTime = Mathf.Clamp(value, 0, timeLimit);
             
             if (_leftTime == 0f)
             {
-                GameSetting.currentGameState = GameSetting.GameState.Failure;
+                timerSlider.value = 0f;
+                GameSetting.currentGameState = GameSetting.GameState.Over;
                 Debug.Log("X(");
             }
         }
     }
+
     /// <summary>
     /// decreaseSpeed return x / sqrt(1 + pow(x, 2)) + 2f (however, x = stageNum / 16f - 3)
     /// </summary>
@@ -47,7 +67,7 @@ public class Timer : MonoBehaviour
     private void Awake()
     {
         stageNumBeforeChangeing = gameManager.stageNum;
-        leftTime = gameManager.timeLimit;
+        leftTime = timeLimit;
     }
 
     private void Update()
@@ -61,13 +81,18 @@ public class Timer : MonoBehaviour
                     stageNumBeforeChangeing = gameManager.stageNum;
                 }
 
-                timerSlider.value = Mathf.Clamp01((leftTime -= Time.deltaTime * decreaseSpeed) / gameManager.timeLimit);
+                timerSlider.value = Mathf.Clamp01((leftTime -= Time.deltaTime * decreaseSpeed) / timeLimit);
                 break;
             case GameSetting.GameState.NotPlay:
-                timerSlider.value = leftTime = gameManager.timeLimit;
+                timerSlider.value = leftTime = timeLimit;
                 break;
             default:
                 break;
         }
+    }
+
+    public void ResetTimer()
+    {
+        leftTime = timeLimit;
     }
 }
