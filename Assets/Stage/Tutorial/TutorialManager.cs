@@ -100,10 +100,10 @@ public class TutorialManager : MonoBehaviour
 
     private void Initialize()
     {
-        gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
-        selectionBox = GameObject.Find("Selection Box").GetComponent<SelectionBox>();
-        timer = GameObject.Find("Timer").GetComponent<Timer>();
-        title = GameObject.Find("Title & Stage Number").GetComponent<TextMeshProUGUI>();
+        gameManager = FindObjectOfType<GameManager>();
+        selectionBox = FindObjectOfType<SelectionBox>();
+        timer = FindObjectOfType<Timer>();
+        title = FindObjectOfType<StageText>().GetComponent<TextMeshProUGUI>();
 
         timer.ResetTimer();
         timer.stopTimer = true;
