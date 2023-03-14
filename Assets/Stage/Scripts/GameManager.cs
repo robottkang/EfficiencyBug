@@ -10,6 +10,8 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     private TutorialManager tutorialManager;
     [SerializeField]
+    private GameObject continueButton;
+    [SerializeField]
     private GameObject quitMenu;
     [HideInInspector]
     public FieldBorad field;
@@ -96,6 +98,8 @@ public class GameManager : MonoBehaviour
     {
         TryChangeHighestScore();
 
+        continueButton.SetActive(true);
+
         //if (PlayerPrefs.GetString("CheckHighestScoreManipulation") == SecureHelper.HashRobottkangSalt(highestScore.ToString()))
         //{
         //    TryChangeHighestScore();
@@ -140,7 +144,14 @@ public class GameManager : MonoBehaviour
         TryChangeHighestScore();
         stageNum = 0;
         GameSetting.currentGameState = GameSetting.GameState.NotPlay;
+        GameSetting.isGetContinueReward = false;
         RearrangeBorad(2);
+    }
+
+    public void ContinueGame()
+    {
+        GameSetting.currentGameState = GameSetting.GameState.Play; // 여기 어떻게 좀 해봐
+        FindObjectOfType<Timer>().ResetTimer();
     }
 
     private void Initialize()
@@ -207,4 +218,6 @@ public static partial class GameSetting
         Pause,
         Over,
     }
+
+    public static bool isGetContinueReward = false;
 }
