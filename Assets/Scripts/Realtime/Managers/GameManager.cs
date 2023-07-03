@@ -152,6 +152,7 @@ public class GameManager : MonoBehaviour
     {
         GameSetting.currentGameState = GameSetting.GameState.Play; // 여기 어떻게 좀 해봐
         FindObjectOfType<Timer>().ResetTimer();
+        LoadRewardedAd();
     }
 
     private void Initialize()
