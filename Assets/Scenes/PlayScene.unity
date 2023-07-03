@@ -5250,7 +5250,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   setting: {fileID: 777596055}
   tutorialManager: {fileID: -7909198277654331760, guid: 6d019cb8932c5d94a960d7ca9043f2a5, type: 3}
-  continueButton: {fileID: 0}
+  continueButton: {fileID: 847633663}
   quitMenu: {fileID: 959405734}
   field:
     fieldObject: {fileID: 920401360}
@@ -8746,7 +8746,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3072770838563085636, guid: 0ec8cfc42f4947a44a83c4cb0528e1bb, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: ContinueGame
+      value: ShowRewardedAd
       objectReference: {fileID: 0}
     - target: {fileID: 3072770838563085636, guid: 0ec8cfc42f4947a44a83c4cb0528e1bb, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_MethodName

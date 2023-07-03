@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using GoogleMobileAds.Api;
+using GoogleMobileAds.Common;
 
 public class GameManager : MonoBehaviour
 {
@@ -51,20 +53,12 @@ public class GameManager : MonoBehaviour
     }
 
 
-    private void Awake()
+    private void Start()
     {
         Initialize();
 
         if (PlayerPrefs.HasKey("HighestScore"))
         {
-            //if (SecureHelper.HashRobottkangSalt((temp = PlayerPrefs.GetInt("HighestScore")).ToString()) == PlayerPrefs.GetString("CheckHighestScoreManipulation"))
-            //{
-            //    highestScore = temp;
-            //}
-            //else
-            //{
-            //    Debug.Log("어케 했누");
-            //}
             TryChangeHighestScore();
         }
         else
@@ -83,6 +77,7 @@ public class GameManager : MonoBehaviour
         switch (GameSetting.currentGameState)
         {
             case GameSetting.GameState.NotPlay:
+                GameSetting.getsContinueReward = false;
                 break;
             case GameSetting.GameState.Play:
                 break;
@@ -98,16 +93,11 @@ public class GameManager : MonoBehaviour
     {
         TryChangeHighestScore();
 
-        continueButton.SetActive(true);
-
-        //if (PlayerPrefs.GetString("CheckHighestScoreManipulation") == SecureHelper.HashRobottkangSalt(highestScore.ToString()))
-        //{
-        //    TryChangeHighestScore();
-        //}
-        //else
-        //{
-        //    Debug.Log("마 이 쉐리 뭐네");
-        //}
+        if (!GameSetting.getsContinueReward)
+        {
+            GameSetting.getsContinueReward = true;
+            continueButton.SetActive(true);
+        }
     }
 
     public void TryChangeHighestScore()
@@ -121,7 +111,6 @@ public class GameManager : MonoBehaviour
     private void SetHighestScore()
     {
         PlayerPrefs.SetInt("HighestScore", stageNum);
-        //PlayerPrefs.SetString("CheckHighestScoreManipulation", SecureHelper.HashRobottkangSalt(stageNum.ToString()));
     }
 
     /// <summary>
@@ -144,13 +133,13 @@ public class GameManager : MonoBehaviour
         TryChangeHighestScore();
         stageNum = 0;
         GameSetting.currentGameState = GameSetting.GameState.NotPlay;
-        GameSetting.isGetContinueReward = false;
+        GameSetting.getsContinueReward = false;
         RearrangeBorad(2);
     }
 
     public void ContinueGame()
     {
-        GameSetting.currentGameState = GameSetting.GameState.Play; // 여기 어떻게 좀 해봐
+        GameSetting.currentGameState = GameSetting.GameState.Play;
         FindObjectOfType<Timer>().ResetTimer();
         LoadRewardedAd();
     }
@@ -158,7 +147,8 @@ public class GameManager : MonoBehaviour
     private void Initialize()
     {
         InitializeBorad();
-        
+        InitializeMobileAd();
+
         if (!GameSetting.whetherDidTutorial)
         {
             Instantiate(tutorialManager.gameObject).GetComponent<TutorialManager>().gameManager = this;
@@ -185,9 +175,71 @@ public class GameManager : MonoBehaviour
         RearrangeBorad(2);
     }
 
+    private void InitializeMobileAd()
+    {
+        MobileAds.Initialize(initStatus => { });
+
+        GameSetting.adUnitId = "";
+
+        LoadRewardedAd();
+    }
+    
+    public void LoadRewardedAd()
+    {
+        // Clean up the old ad before loading a new one.
+        if (GameSetting.rewardedAd != null)
+        {
+            GameSetting.rewardedAd.Destroy();
+            GameSetting.rewardedAd = null;
+        }
+
+        Debug.Log("Loading the rewarded ad.");
+
+        // create our request used to load the ad.
+        var adRequest = new AdRequest.Builder().Build();
+
+        // send the request to load the ad.
+        RewardedAd.Load(GameSetting.adUnitId, adRequest,
+            (RewardedAd ad, LoadAdError error) =>
+            {
+                // if error is not null, the load request failed.
+                if (error != null || ad == null)
+                {
+                    Debug.LogError("Rewarded ad failed to load an ad " +
+                                   "with error : " + error);
+                    return;
+                }
+
+                Debug.Log("Rewarded ad loaded with response : "
+                          + ad.GetResponseInfo());
+
+                GameSetting.rewardedAd = ad;
+            });
+    }
+    
+    public void ShowRewardedAd()
+    {
+        const string rewardMsg =
+            "Rewarded ad rewarded the user. Type: {0}, amount: {1}.";
+
+        if (GameSetting.rewardedAd != null && GameSetting.rewardedAd.CanShowAd())
+        {
+            GameSetting.rewardedAd.Show((Reward reward) =>
+            {
+                ContinueGame();
+                Debug.Log(string.Format(rewardMsg, reward.Type, reward.Amount));
+            });
+        }
+    }
+
     public void QuitGame()
     {
         Application.Quit();
+    }
+    
+    private void OnApplicationQuit()
+    {
+        PlayerPrefs.Save();
     }
 }
 
@@ -220,5 +272,7 @@ public static partial class GameSetting
         Over,
     }
 
-    public static bool isGetContinueReward = false;
+    public static RewardedAd rewardedAd;
+    public static string adUnitId;
+    public static bool getsContinueReward = false;
 }
